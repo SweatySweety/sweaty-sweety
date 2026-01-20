@@ -109,6 +109,9 @@ export default function SweatySweety() {
     try {
       const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
       
+      console.log('API Key exists:', !!apiKey);
+      console.log('API Key starts with:', apiKey ? apiKey.substring(0, 10) + '...' : 'NO KEY');
+      
       if (!apiKey) {
         throw new Error('API key not configured');
       }
