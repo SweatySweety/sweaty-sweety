@@ -146,7 +146,15 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
         })
       });
       
+      console.log('Response status:', response.status);
+      
       const data = await response.json();
+      console.log('Response data:', data);
+      
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'API request failed');
+      }
+      
       const text = data.content?.map(item => item.text || '').join('') || '';
       const cleaned = text.replace(/```json|```/g, '').trim();
       const nicknames = JSON.parse(cleaned);
