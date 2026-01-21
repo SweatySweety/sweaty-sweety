@@ -32,6 +32,8 @@ export default function SweatySweety() {
   const [expandedMemoryId, setExpandedMemoryId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const recognitionRef = useRef(null);
+  const isProcessingRef = useRef(false);
+  const isSavingRef = useRef(false);
 
   // Load memories from Supabase
   useEffect(() => {
@@ -111,7 +113,9 @@ export default function SweatySweety() {
 
   const generateNicknames = async () => {
     if (!memory.trim()) return;
+    if (isProcessingRef.current) return; // Guard against re-triggers
     
+    isProcessingRef.current = true;
     setIsLoading(true);
     setLoadingMessageIndex(0);
     setGeneratedNicknames([]);
@@ -177,6 +181,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
       ]);
     } finally {
       setIsLoading(false);
+      isProcessingRef.current = false;
     }
   };
 
@@ -198,34 +203,41 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
       return;
     }
     
-    const existingNicknames = new Set(savedMemories.map(m => m.nickname));
-    const newMemories = [];
+    if (isSavingRef.current) return; // Guard against double-saves
+    isSavingRef.current = true;
     
-    selectedNicknames.forEach(nickname => {
-      if (!existingNicknames.has(nickname)) {
-        newMemories.push({
-          nickname,
-          memory: memory,
-          date: new Date().toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          })
-        });
-      }
-    });
-    
-    if (newMemories.length > 0) {
-      const { data, error } = await supabase
-        .from('memories')
-        .insert(newMemories)
-        .select();
+    try {
+      const existingNicknames = new Set(savedMemories.map(m => m.nickname));
+      const newMemories = [];
       
-      if (error) {
-        console.error('Failed to save memories:', error);
-      } else {
-        setSavedMemories(prev => [...data, ...prev]);
+      selectedNicknames.forEach(nickname => {
+        if (!existingNicknames.has(nickname)) {
+          newMemories.push({
+            nickname,
+            memory: memory,
+            date: new Date().toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            })
+          });
+        }
+      });
+      
+      if (newMemories.length > 0) {
+        const { data, error } = await supabase
+          .from('memories')
+          .insert(newMemories)
+          .select();
+        
+        if (error) {
+          console.error('Failed to save memories:', error);
+        } else {
+          setSavedMemories(prev => [...data, ...prev]);
+        }
       }
+    } finally {
+      isSavingRef.current = false;
     }
   };
 
