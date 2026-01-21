@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 const LOADING_MESSAGES = [
   "Turning love into language...",
@@ -28,26 +33,32 @@ export default function SweatySweety() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const recognitionRef = useRef(null);
 
-  // Load memories from storage
+  // Load memories from Supabase
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setSavedMemories(JSON.parse(stored));
+    const loadMemories = async () => {
+      if (!supabase) {
+        console.log('Supabase not configured');
+        return;
       }
-    } catch (e) {
-      console.error('Failed to load memories:', e);
-    }
+      
+      try {
+        const { data, error } = await supabase
+          .from('memories')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Failed to load memories:', error);
+        } else {
+          setSavedMemories(data || []);
+        }
+      } catch (e) {
+        console.error('Failed to load memories:', e);
+      }
+    };
+    
+    loadMemories();
   }, []);
-
-  // Save memories to storage
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(savedMemories));
-    } catch (e) {
-      console.error('Failed to save memories:', e);
-    }
-  }, [savedMemories]);
 
   // Cycle loading messages
   useEffect(() => {
@@ -182,14 +193,18 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
     });
   };
 
-  const saveSelectedNicknames = () => {
+  const saveSelectedNicknames = async () => {
+    if (!supabase) {
+      console.log('Supabase not configured');
+      return;
+    }
+    
     const existingNicknames = new Set(savedMemories.map(m => m.nickname));
     const newMemories = [];
     
     selectedNicknames.forEach(nickname => {
       if (!existingNicknames.has(nickname)) {
         newMemories.push({
-          id: Date.now() + Math.random(),
           nickname,
           memory: memory,
           date: new Date().toLocaleDateString('en-US', {
@@ -202,12 +217,35 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
     });
     
     if (newMemories.length > 0) {
-      setSavedMemories(prev => [...newMemories, ...prev]);
+      const { data, error } = await supabase
+        .from('memories')
+        .insert(newMemories)
+        .select();
+      
+      if (error) {
+        console.error('Failed to save memories:', error);
+      } else {
+        setSavedMemories(prev => [...data, ...prev]);
+      }
     }
   };
 
-  const deleteMemory = (id) => {
-    setSavedMemories(prev => prev.filter(m => m.id !== id));
+  const deleteMemory = async (id) => {
+    if (!supabase) {
+      console.log('Supabase not configured');
+      return;
+    }
+    
+    const { error } = await supabase
+      .from('memories')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Failed to delete memory:', error);
+    } else {
+      setSavedMemories(prev => prev.filter(m => m.id !== id));
+    }
     setDeleteConfirmId(null);
   };
 
