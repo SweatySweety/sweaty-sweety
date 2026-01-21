@@ -133,7 +133,7 @@ export default function SweatySweety() {
           'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'nousresearch/hermes-3-llama-3.1-405b:free',
+          model: 'google/gemini-2.0-flash-exp:free',
           messages: [{
             role: 'user',
             content: `Based on this relationship memory, generate exactly 5 playful, affectionate 2-word nicknames for the person (boyfriend/girlfriend) mentioned in the memory. The nicknames should describe the PERSON, not the event.
