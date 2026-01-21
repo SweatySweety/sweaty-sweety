@@ -107,29 +107,23 @@ export default function SweatySweety() {
     setSelectedNicknames(new Set());
     
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       
       console.log('API Key exists:', !!apiKey);
-      console.log('API Key starts with:', apiKey ? apiKey.substring(0, 10) + '...' : 'NO KEY');
       
       if (!apiKey) {
         throw new Error('API key not configured');
       }
       
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `Based on this relationship memory, generate exactly 5 playful, affectionate 2-word nicknames for the person (boyfriend/girlfriend) mentioned in the memory. The nicknames should describe the PERSON, not the event.
+          contents: [{
+            parts: [{
+              text: `Based on this relationship memory, generate exactly 5 playful, affectionate 2-word nicknames for the person (boyfriend/girlfriend) mentioned in the memory. The nicknames should describe the PERSON, not the event.
 
 Rules:
 - Each nickname must be exactly 2 words
@@ -142,6 +136,7 @@ Rules:
 Memory: "${memory}"
 
 Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example format: ["Nickname One", "Nickname Two", "Nickname Three", "Nickname Four", "Nickname Five"]`
+            }]
           }]
         })
       });
@@ -155,7 +150,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
         throw new Error(data.error?.message || 'API request failed');
       }
       
-      const text = data.content?.map(item => item.text || '').join('') || '';
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       const cleaned = text.replace(/```json|```/g, '').trim();
       const nicknames = JSON.parse(cleaned);
       setGeneratedNicknames(nicknames);
