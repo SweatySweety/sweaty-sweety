@@ -32,6 +32,7 @@ export default function SweatySweety() {
   const [expandedMemoryId, setExpandedMemoryId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [copiedNickname, setCopiedNickname] = useState(null);
   const recognitionRef = useRef(null);
   const voiceTimeoutRef = useRef(null);
   const isProcessingRef = useRef(false);
@@ -293,6 +294,17 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
     });
   };
 
+  const copyToClipboard = async (nickname, e) => {
+    e.stopPropagation(); // Prevent triggering the card selection
+    try {
+      await navigator.clipboard.writeText(nickname);
+      setCopiedNickname(nickname);
+      setTimeout(() => setCopiedNickname(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const saveSelectedNicknames = async () => {
     if (!supabase) {
       console.log('Supabase not configured');
@@ -505,6 +517,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
               {generatedNicknames.map((nickname, index) => {
                 const isSelected = selectedNicknames.has(nickname);
                 const isSaved = savedNicknamesSet.has(nickname);
+                const isCopied = copiedNickname === nickname;
                 
                 return (
                   <button
@@ -528,6 +541,15 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
                       ...(isSaved ? styles.nicknameTextSaved : {})
                     }}>
                       {nickname}
+                    </span>
+                    <span
+                      style={{
+                        ...styles.copyButton,
+                        ...(isCopied ? styles.copyButtonCopied : {})
+                      }}
+                      onClick={(e) => copyToClipboard(nickname, e)}
+                    >
+                      {isCopied ? '✓' : '📋'}
                     </span>
                     {isSaved && <span style={styles.savedBadge}>Saved</span>}
                   </button>
@@ -1093,6 +1115,7 @@ const styles = {
     fontSize: '18px',
     fontWeight: '600',
     color: '#e8b4d8',
+    flex: 1,
   },
   nicknameTextSelected: {
     color: '#f9a8d4',
@@ -1109,6 +1132,24 @@ const styles = {
     letterSpacing: '0.5px',
     flexShrink: 0,
     marginLeft: 'auto',
+  },
+  copyButton: {
+    padding: '8px',
+    fontSize: '16px',
+    cursor: 'pointer',
+    opacity: 0.6,
+    transition: 'all 0.2s ease',
+    borderRadius: '8px',
+    minWidth: '36px',
+    minHeight: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  copyButtonCopied: {
+    opacity: 1,
+    color: '#10b981',
+    background: 'rgba(16, 185, 129, 0.2)',
   },
   confirmButton: {
     width: '100%',
