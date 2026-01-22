@@ -706,7 +706,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
         }
         
         .animated-bg {
-          background: linear-gradient(-45deg, #1a0a2e, #4a1942, #2d3a8c, #1e5a6b, #4a1942, #1a0a2e);
+          background: linear-gradient(-45deg, #1a0a2e, #4a1942, #6b1d3a, #3d1a5c, #4a1942, #1a0a2e);
           background-size: 300% 300%;
           animation: gradientFlow 10s ease infinite;
         }
