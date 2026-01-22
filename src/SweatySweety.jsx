@@ -446,6 +446,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
 
           {/* Save Memory Button */}
           <button
+            className="save-button"
             style={{
               ...styles.saveButton,
               ...(isLoading ? styles.saveButtonLoading : {}),
@@ -485,6 +486,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
                 return (
                   <button
                     key={index}
+                    className="nickname-card"
                     style={{
                       ...styles.nicknameCard,
                       ...(isSelected ? styles.nicknameCardSelected : {}),
@@ -562,6 +564,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
                 return (
                   <div
                     key={mem.id}
+                    className="memory-card"
                     style={{
                       ...styles.memoryCard,
                       ...styles[`memoryCardGradient${gradientIndex}`]
@@ -709,6 +712,44 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           background: linear-gradient(-45deg, #1a0a2e, #4a1942, #6b1d3a, #3d1a5c, #4a1942, #1a0a2e);
           background-size: 300% 300%;
           animation: gradientFlow 10s ease infinite;
+        }
+        
+        .memory-card {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .memory-card:hover {
+          transform: scale(1.02);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        
+        .memory-card:active {
+          transform: scale(0.98);
+        }
+        
+        .nickname-card {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .nickname-card:hover {
+          transform: scale(1.02);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        
+        .nickname-card:active {
+          transform: scale(0.98);
+        }
+        
+        .save-button {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .save-button:hover {
+          transform: scale(1.02);
+        }
+        
+        .save-button:active {
+          transform: scale(0.97);
         }
       `}</style>
     </div>
@@ -1101,7 +1142,7 @@ const styles = {
     border: '1px solid rgba(255, 255, 255, 0.15)',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
     cursor: 'pointer',
-    transition: 'all 0.3s ease',
+    transition: 'all 0.2s ease',
   },
   memoryCardGradient0: {
     background: 'rgba(244, 114, 182, 0.08)',
