@@ -18,7 +18,237 @@ const LOADING_MESSAGES = [
 
 const STORAGE_KEY = 'sweaty-sweety-memories';
 
+// Auth Screen Component
+function AuthScreen({ onAuthSuccess }) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        setError('Check your email for a confirmation link!');
+        setLoading(false);
+        return;
+      }
+      onAuthSuccess();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="animated-bg" style={authStyles.container}>
+      <div style={authStyles.card}>
+        <div style={authStyles.logoContainer}>
+          <span style={authStyles.heartIcon}>💝</span>
+          <h1 style={authStyles.title}>Sweaty Sweety</h1>
+        </div>
+        <p style={authStyles.subtitle}>Your private relationship memory vault</p>
+        
+        <form onSubmit={handleSubmit} style={authStyles.form}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={authStyles.input}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={authStyles.input}
+            required
+            minLength={6}
+          />
+          
+          {error && (
+            <p style={authStyles.error}>{error}</p>
+          )}
+          
+          <button
+            type="submit"
+            style={{
+              ...authStyles.button,
+              ...(loading ? authStyles.buttonDisabled : {})
+            }}
+            disabled={loading}
+          >
+            {loading ? 'Please wait...' : (isLogin ? 'Log In' : 'Sign Up')}
+          </button>
+        </form>
+        
+        <p style={authStyles.switchText}>
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <span
+            style={authStyles.switchLink}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError('');
+            }}
+          >
+            {isLogin ? 'Sign Up' : 'Log In'}
+          </span>
+        </p>
+      </div>
+      
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
+        
+        @keyframes gradientFlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        .animated-bg {
+          background: linear-gradient(-45deg, #1a0a2e, #4a1942, #6b1d3a, #3d1a5c, #4a1942, #1a0a2e);
+          background-size: 300% 300%;
+          animation: gradientFlow 10s ease infinite;
+        }
+        
+        * {
+          box-sizing: border-box;
+        }
+        
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+const authStyles = {
+  container: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
+    fontFamily: "'Quicksand', sans-serif",
+  },
+  card: {
+    width: '100%',
+    maxWidth: '400px',
+    padding: '40px 30px',
+    borderRadius: '24px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+  },
+  logoContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    marginBottom: '8px',
+  },
+  heartIcon: {
+    fontSize: '36px',
+  },
+  title: {
+    fontFamily: "'Playfair Display', serif",
+    fontSize: '28px',
+    fontWeight: '700',
+    background: 'linear-gradient(135deg, #f472b6 0%, #c084fc 50%, #e2e8f0 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    margin: 0,
+  },
+  subtitle: {
+    color: 'rgba(226, 232, 240, 0.6)',
+    fontSize: '14px',
+    textAlign: 'center',
+    marginBottom: '30px',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  input: {
+    width: '100%',
+    padding: '16px 20px',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    borderRadius: '16px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(8px)',
+    color: '#e2e8f0',
+    fontSize: '16px',
+    fontFamily: "'Quicksand', sans-serif",
+    outline: 'none',
+    transition: 'all 0.3s ease',
+  },
+  button: {
+    width: '100%',
+    padding: '16px 24px',
+    border: 'none',
+    borderRadius: '16px',
+    background: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)',
+    color: '#ffffff',
+    fontSize: '16px',
+    fontWeight: '700',
+    fontFamily: "'Quicksand', sans-serif",
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    marginTop: '8px',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+  error: {
+    color: '#f87171',
+    fontSize: '14px',
+    textAlign: 'center',
+    margin: '0',
+    padding: '12px',
+    background: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: '12px',
+  },
+  switchText: {
+    color: 'rgba(226, 232, 240, 0.6)',
+    fontSize: '14px',
+    textAlign: 'center',
+    marginTop: '24px',
+  },
+  switchLink: {
+    color: '#f472b6',
+    cursor: 'pointer',
+    fontWeight: '600',
+  },
+};
+
 export default function SweatySweety() {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [memory, setMemory] = useState('');
   const [inputMode, setInputMode] = useState('type');
   const [isListening, setIsListening] = useState(false);
@@ -38,11 +268,31 @@ export default function SweatySweety() {
   const isProcessingRef = useRef(false);
   const isSavingRef = useRef(false);
 
-  // Load memories from Supabase
+  // Check auth state on mount and listen for changes
+  useEffect(() => {
+    if (!supabase) {
+      setAuthLoading(false);
+      return;
+    }
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load memories from Supabase (only when user is logged in)
   useEffect(() => {
     const loadMemories = async () => {
-      if (!supabase) {
-        console.log('Supabase not configured');
+      if (!supabase || !user) {
         return;
       }
       
@@ -50,6 +300,7 @@ export default function SweatySweety() {
         const { data, error } = await supabase
           .from('memories')
           .select('*')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         
         if (error) {
@@ -63,7 +314,7 @@ export default function SweatySweety() {
     };
     
     loadMemories();
-  }, []);
+  }, [user]);
 
   // Cycle loading messages
   useEffect(() => {
@@ -306,8 +557,8 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
   };
 
   const saveSelectedNicknames = async () => {
-    if (!supabase) {
-      console.log('Supabase not configured');
+    if (!supabase || !user) {
+      console.log('Supabase not configured or user not logged in');
       return;
     }
     
@@ -321,6 +572,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
       selectedNicknames.forEach(nickname => {
         if (!existingNicknames.has(nickname)) {
           newMemories.push({
+            user_id: user.id,
             nickname,
             memory: memory,
             date: new Date().toLocaleDateString('en-US', {
@@ -371,6 +623,11 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
     setDeleteConfirmId(null);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSavedMemories([]);
+  };
+
   const filteredMemories = savedMemories.filter(m => 
     m.nickname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     m.memory.toLowerCase().includes(searchQuery.toLowerCase())
@@ -379,6 +636,36 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
   const wordCount = memory.trim().split(/\s+/).filter(w => w).length;
 
   const savedNicknamesSet = new Set(savedMemories.map(m => m.nickname));
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="animated-bg" style={{ ...styles.container, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', color: '#e2e8f0' }}>
+          <span style={{ fontSize: '48px' }}>💝</span>
+          <p style={{ fontFamily: "'Quicksand', sans-serif", marginTop: '16px' }}>Loading...</p>
+        </div>
+        <style>{`
+          @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          .animated-bg {
+            background: linear-gradient(-45deg, #1a0a2e, #4a1942, #6b1d3a, #3d1a5c, #4a1942, #1a0a2e);
+            background-size: 300% 300%;
+            animation: gradientFlow 10s ease infinite;
+          }
+          body { margin: 0; padding: 0; }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Show auth screen if not logged in
+  if (!user) {
+    return <AuthScreen onAuthSuccess={() => {}} />;
+  }
 
   return (
     <div className="animated-bg" style={styles.container}>
@@ -414,6 +701,9 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
             <h1 style={styles.title}>Sweaty Sweety</h1>
           </div>
           <p style={styles.subtitle}>Your relationship memory vault</p>
+          <button onClick={handleLogout} style={styles.logoutButton}>
+            Log out
+          </button>
         </header>
 
         {/* Input Section */}
@@ -907,6 +1197,19 @@ const styles = {
     fontSize: '14px',
     margin: 0,
     fontWeight: '500',
+  },
+  logoutButton: {
+    marginTop: '16px',
+    padding: '8px 16px',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '12px',
+    background: 'transparent',
+    color: 'rgba(226, 232, 240, 0.6)',
+    fontSize: '13px',
+    fontWeight: '500',
+    fontFamily: "'Quicksand', sans-serif",
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
   },
   inputSection: {
     marginBottom: '32px',
