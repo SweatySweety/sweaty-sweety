@@ -250,6 +250,7 @@ export default function SweatySweety() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [memory, setMemory] = useState('');
+  const [nicknameStyle, setNicknameStyle] = useState('sweet');
   const [inputMode, setInputMode] = useState('type');
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
@@ -473,6 +474,13 @@ export default function SweatySweety() {
       if (!apiKey) {
         throw new Error('API key not configured');
       }
+
+      const styleInstructions = {
+        sweet: `Style: SWEET - Focus on warm, tender, "aww"-worthy nicknames. Use words like "honey," "angel," "hero," "sunshine," "sweetheart" vibes. Make them heartfelt and endearing.`,
+        teasing: `Style: TEASING - Focus on playful, sassy, banter-filled nicknames. Reference funny moments, playful "fails," or inside jokes from the memory. Keep it lighthearted and fun.`,
+        flirty: `Style: FLIRTY - Focus on subtly suggestive, complimentary nicknames. Hint at attraction, appearance, or charm. Keep it spicy but tasteful.`,
+        wildcard: `Style: WILDCARD - Go completely creative and unexpected! Be weird, quirky, and inventive. Surprise the user with unique combinations they'd never think of.`
+      };
       
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -489,13 +497,14 @@ export default function SweatySweety() {
             role: 'user',
             content: `Based on this relationship memory, generate exactly 5 playful, affectionate 2-word nicknames for the person (boyfriend/girlfriend) mentioned in the memory. The nicknames should describe the PERSON, not the event.
 
+${styleInstructions[nicknameStyle]}
+
 Rules:
 - Each nickname must be exactly 2 words
-- Nicknames should be creative, playful, and affectionate
+- Nicknames should match the requested style above
 - Reference traits, actions, or characteristics of the person from the memory
 - Good example: "Shadow Searcher" (describes the person who searched)
 - Bad example: "Searching Shadows" (describes the event)
-- Other good examples: "Midnight Hero", "Salt Daddy", "Bear Mime", "Giggle Chef", "Blanket Bandit", "Snack King"
 
 Memory: "${memory}"
 
@@ -775,6 +784,31 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
               {isListening && <span style={styles.pulseRing} />}
             </button>
           )}
+
+          {/* Style Selector */}
+          <div style={styles.styleSection}>
+            <p style={styles.styleLabel}>Nickname vibe:</p>
+            <div style={styles.styleGrid}>
+              {[
+                { id: 'sweet', emoji: '🥰', label: 'Sweet' },
+                { id: 'teasing', emoji: '😏', label: 'Teasing' },
+                { id: 'flirty', emoji: '😘', label: 'Flirty' },
+                { id: 'wildcard', emoji: '🎲', label: 'Wildcard' },
+              ].map((style) => (
+                <button
+                  key={style.id}
+                  style={{
+                    ...styles.styleButton,
+                    ...(nicknameStyle === style.id ? styles.styleButtonActive : {})
+                  }}
+                  onClick={() => setNicknameStyle(style.id)}
+                >
+                  <span style={styles.styleEmoji}>{style.emoji}</span>
+                  <span style={styles.styleText}>{style.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Save Memory Button */}
           <button
@@ -1252,6 +1286,46 @@ const styles = {
     color: 'rgba(226, 232, 240, 0.4)',
     fontSize: '12px',
     fontWeight: '500',
+  },
+  styleSection: {
+    marginBottom: '16px',
+  },
+  styleLabel: {
+    color: 'rgba(226, 232, 240, 0.6)',
+    fontSize: '14px',
+    fontWeight: '500',
+    margin: '0 0 10px 0',
+  },
+  styleGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '8px',
+  },
+  styleButton: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '12px 8px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '16px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    fontFamily: "'Quicksand', sans-serif",
+  },
+  styleButtonActive: {
+    background: 'rgba(244, 114, 182, 0.15)',
+    borderColor: 'rgba(244, 114, 182, 0.4)',
+    boxShadow: '0 0 20px rgba(244, 114, 182, 0.2)',
+  },
+  styleEmoji: {
+    fontSize: '20px',
+  },
+  styleText: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: 'rgba(226, 232, 240, 0.7)',
   },
   tabContainer: {
     display: 'flex',
