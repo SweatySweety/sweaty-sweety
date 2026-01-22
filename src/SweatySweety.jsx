@@ -625,7 +625,14 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    // Clear all user-specific state
     setSavedMemories([]);
+    setMemory('');
+    setGeneratedNicknames([]);
+    setSelectedNicknames(new Set());
+    setSearchQuery('');
+    setExpandedMemoryId(null);
+    setDeleteConfirmId(null);
   };
 
   const filteredMemories = savedMemories.filter(m => 
