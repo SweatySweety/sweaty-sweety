@@ -365,7 +365,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
   const savedNicknamesSet = new Set(savedMemories.map(m => m.nickname));
 
   return (
-    <div style={styles.container}>
+    <div className="animated-bg" style={styles.container}>
       {/* Decorative background elements */}
       <div style={styles.bgOrb1} />
       <div style={styles.bgOrb2} />
@@ -704,6 +704,12 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           padding: 0;
           background: #0f0d1a;
         }
+        
+        .animated-bg {
+          background: linear-gradient(-45deg, #0f0d1a, #1a1625, #251538, #1a1625, #0f0d1a);
+          background-size: 400% 400%;
+          animation: gradientFlow 15s ease infinite;
+        }
       `}</style>
     </div>
   );
@@ -712,9 +718,6 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
 const styles = {
   container: {
     minHeight: '100vh',
-    background: 'linear-gradient(-45deg, #0f0d1a, #1a1625, #1e1233, #15121f, #0f0d1a)',
-    backgroundSize: '400% 400%',
-    animation: 'gradientFlow 15s ease infinite',
     fontFamily: "'Quicksand', sans-serif",
     position: 'relative',
     overflow: 'hidden',
