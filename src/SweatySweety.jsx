@@ -682,6 +682,18 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           }
         }
         
+        @keyframes gradientFlow {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+        
         * {
           box-sizing: border-box;
           -webkit-tap-highlight-color: transparent;
@@ -700,7 +712,9 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
 const styles = {
   container: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f0d1a 0%, #1a1625 50%, #0f0d1a 100%)',
+    background: 'linear-gradient(-45deg, #0f0d1a, #1a1625, #1e1233, #15121f, #0f0d1a)',
+    backgroundSize: '400% 400%',
+    animation: 'gradientFlow 15s ease infinite',
     fontFamily: "'Quicksand', sans-serif",
     position: 'relative',
     overflow: 'hidden',
