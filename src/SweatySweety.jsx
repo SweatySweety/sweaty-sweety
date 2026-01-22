@@ -32,6 +32,7 @@ export default function SweatySweety() {
   const [expandedMemoryId, setExpandedMemoryId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const recognitionRef = useRef(null);
+  const voiceTimeoutRef = useRef(null);
   const isProcessingRef = useRef(false);
   const isSavingRef = useRef(false);
 
@@ -80,6 +81,15 @@ export default function SweatySweety() {
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
       
+      recognitionRef.current.onstart = () => {
+        console.log('Speech recognition started');
+        // Clear fail-safe timer if recognition started successfully
+        if (voiceTimeoutRef.current) {
+          clearTimeout(voiceTimeoutRef.current);
+          voiceTimeoutRef.current = null;
+        }
+      };
+      
       recognitionRef.current.onresult = (event) => {
         let transcript = '';
         for (let i = 0; i < event.results.length; i++) {
@@ -90,24 +100,105 @@ export default function SweatySweety() {
       
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        setIsListening(false);
+        resetVoiceState();
       };
       
       recognitionRef.current.onend = () => {
-        setIsListening(false);
+        console.log('Speech recognition ended');
+        resetVoiceState();
       };
     }
+    
+    // Cleanup on unmount
+    return () => {
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+      }
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Ignore errors on cleanup
+        }
+      }
+    };
   }, []);
 
-  const toggleVoice = () => {
+  // Helper to fully reset voice state
+  const resetVoiceState = () => {
+    setIsListening(false);
+    if (voiceTimeoutRef.current) {
+      clearTimeout(voiceTimeoutRef.current);
+      voiceTimeoutRef.current = null;
+    }
+  };
+
+  // Resume AudioContext to wake up mobile hardware
+  const resumeAudioContext = async () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        const audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+        // Create a brief silent sound to fully wake up audio hardware
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = 0; // Silent
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.01);
+      }
+    } catch (e) {
+      console.log('AudioContext resume skipped:', e);
+    }
+  };
+
+  const toggleVoice = async () => {
     if (!recognitionRef.current) return;
+    
     if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
+      // Stop recording
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error('Error stopping recognition:', e);
+      }
+      resetVoiceState();
     } else {
+      // Start recording
       setMemory('');
-      recognitionRef.current.start();
+      
+      // 1. Resume AudioContext to wake up mobile hardware
+      await resumeAudioContext();
+      
+      // 2. Set listening state
       setIsListening(true);
+      
+      // 3. Start recognition
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.error('Error starting recognition:', e);
+        resetVoiceState();
+        return;
+      }
+      
+      // 4. Fail-safe timer - reset if onstart doesn't fire within 4 seconds
+      voiceTimeoutRef.current = setTimeout(() => {
+        console.log('Voice recognition timeout - resetting');
+        if (recognitionRef.current) {
+          try {
+            recognitionRef.current.stop();
+          } catch (e) {
+            // Ignore
+          }
+        }
+        resetVoiceState();
+        alert('Voice recording failed to start. Please try again.');
+      }, 4000);
     }
   };
 
