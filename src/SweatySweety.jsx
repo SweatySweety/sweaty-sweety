@@ -31,6 +31,7 @@ export default function SweatySweety() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedMemoryId, setExpandedMemoryId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const recognitionRef = useRef(null);
   const voiceTimeoutRef = useRef(null);
   const isProcessingRef = useRef(false);
@@ -329,6 +330,9 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           console.error('Failed to save memories:', error);
         } else {
           setSavedMemories(prev => [...data, ...prev]);
+          // Trigger confetti burst
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 3000);
         }
       }
     } finally {
@@ -366,6 +370,25 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
 
   return (
     <div className="animated-bg" style={styles.container}>
+      {/* Heart Confetti */}
+      {showConfetti && (
+        <div style={styles.confettiContainer}>
+          {[...Array(20)].map((_, i) => (
+            <span
+              key={i}
+              className="confetti-heart"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 0.5}s`,
+                fontSize: `${Math.random() * 16 + 12}px`,
+              }}
+            >
+              {['💖', '💕', '💗', '💓', '❤️'][Math.floor(Math.random() * 5)]}
+            </span>
+          ))}
+        </div>
+      )}
+      
       {/* Decorative background elements */}
       <div style={styles.bgOrb1} />
       <div style={styles.bgOrb2} />
@@ -751,6 +774,23 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
         .save-button:active {
           transform: scale(0.97);
         }
+        
+        @keyframes confettiFall {
+          0% {
+            transform: translateY(-100%) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        
+        .confetti-heart {
+          position: absolute;
+          top: 0;
+          animation: confettiFall 3s ease-out forwards;
+        }
       `}</style>
     </div>
   );
@@ -761,6 +801,16 @@ const styles = {
     minHeight: '100vh',
     fontFamily: "'Quicksand', sans-serif",
     position: 'relative',
+    overflow: 'hidden',
+  },
+  confettiContainer: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+    zIndex: 1000,
     overflow: 'hidden',
   },
   bgOrb1: {
