@@ -1313,8 +1313,6 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     fontFamily: "'Quicksand', sans-serif",
-    WebkitTapHighlightColor: 'transparent',
-    outline: 'none',
   },
   styleButtonActive: {
     background: 'rgba(244, 114, 182, 0.15)',
