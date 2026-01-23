@@ -801,7 +801,10 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
                     ...styles.styleButton,
                     ...(nicknameStyle === style.id ? styles.styleButtonActive : {})
                   }}
-                  onClick={() => setNicknameStyle(style.id)}
+                  onClick={(e) => {
+                    setNicknameStyle(style.id);
+                    e.currentTarget.blur();
+                  }}
                 >
                   <span style={styles.styleEmoji}>{style.emoji}</span>
                   <span style={styles.styleText}>{style.label}</span>
@@ -1094,9 +1097,37 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
-        .memory-card:hover {
-          transform: scale(1.02);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        @media (hover: hover) {
+          .memory-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+          }
+          
+          .nickname-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+          }
+          
+          .save-button:hover {
+            transform: scale(1.02);
+          }
+        }
+        
+        button {
+          -webkit-tap-highlight-color: transparent;
+        }
+        
+        button:focus {
+          outline: none;
+        }
+        
+        button:focus-visible {
+          outline: 2px solid rgba(244, 114, 182, 0.5);
+          outline-offset: 2px;
+        }
+        
+        * {
+          -webkit-tap-highlight-color: transparent;
         }
         
         .memory-card:active {
@@ -1107,21 +1138,12 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
-        .nickname-card:hover {
-          transform: scale(1.02);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
-        
         .nickname-card:active {
           transform: scale(0.98);
         }
         
         .save-button {
           transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .save-button:hover {
-          transform: scale(1.02);
         }
         
         .save-button:active {
@@ -1313,6 +1335,8 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     fontFamily: "'Quicksand', sans-serif",
+    WebkitTapHighlightColor: 'transparent',
+    outline: 'none',
   },
   styleButtonActive: {
     background: 'rgba(244, 114, 182, 0.15)',
