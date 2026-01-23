@@ -791,7 +791,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
             <div style={styles.styleGrid}>
               {[
                 { id: 'sweet', emoji: '🥰', label: 'Sweet' },
-                { id: 'teasing', emoji: '😏', label: 'Teasing' },
+                { id: 'teasing', emoji: '😜', label: 'Teasing' },
                 { id: 'flirty', emoji: '😘', label: 'Flirty' },
                 { id: 'wildcard', emoji: '🎲', label: 'Wildcard' },
               ].map((style) => (
