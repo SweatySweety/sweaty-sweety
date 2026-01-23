@@ -63,7 +63,7 @@ function AuthScreen({ onAuthSuccess }) {
           <span style={authStyles.heartIcon}>💝</span>
           <h1 style={authStyles.title}>Sweaty Sweety</h1>
         </div>
-        <p style={authStyles.subtitle}>Your private relationship memory vault</p>
+        <p style={authStyles.subtitle}>Turn shared moments into playful inside jokes.</p>
         
         <form onSubmit={handleSubmit} style={authStyles.form}>
           <input
@@ -633,15 +633,29 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    // Clear all user-specific state
-    setSavedMemories([]);
-    setMemory('');
-    setGeneratedNicknames([]);
-    setSelectedNicknames(new Set());
-    setSearchQuery('');
-    setExpandedMemoryId(null);
-    setDeleteConfirmId(null);
+    console.log('Logout button clicked!');
+    try {
+      if (supabase) {
+        console.log('Calling supabase.auth.signOut()');
+        await supabase.auth.signOut();
+        console.log('Sign out successful');
+      } else {
+        console.log('Supabase not initialized');
+      }
+      // Clear all user-specific state
+      setSavedMemories([]);
+      setMemory('');
+      setGeneratedNicknames([]);
+      setSelectedNicknames(new Set());
+      setSearchQuery('');
+      setExpandedMemoryId(null);
+      setDeleteConfirmId(null);
+      setUser(null);
+      console.log('State cleared, user set to null');
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Error logging out: ' + error.message);
+    }
   };
 
   const filteredMemories = savedMemories.filter(m => 
@@ -760,7 +774,7 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           <div style={styles.textareaContainer}>
             <textarea
               style={styles.textarea}
-              placeholder="Share a special moment with your sweetheart..."
+              placeholder="Upgrade your 'What time works for you?' texts. Enter a fun memory here to generate nicknames that turn everyday logistics into meaningful inside jokes."
               value={memory}
               onChange={(e) => setMemory(e.target.value)}
               disabled={isListening}
@@ -1134,6 +1148,22 @@ Respond with ONLY a JSON array of 5 nickname strings, nothing else. Example form
           -webkit-tap-highlight-color: transparent;
         }
         
+        textarea::placeholder {
+          color: rgba(226, 232, 240, 0.5);
+          line-height: 1.6;
+          opacity: 1;
+        }
+        
+        textarea::-webkit-input-placeholder {
+          color: rgba(226, 232, 240, 0.5);
+          line-height: 1.6;
+        }
+        
+        textarea::-moz-placeholder {
+          color: rgba(226, 232, 240, 0.5);
+          line-height: 1.6;
+        }
+        
         .memory-card:active {
           transform: scale(0.98);
         }
@@ -1277,6 +1307,10 @@ const styles = {
     fontFamily: "'Quicksand', sans-serif",
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+    position: 'relative',
+    zIndex: 10,
+    minHeight: '44px',
+    minWidth: '80px',
   },
   inputSection: {
     marginBottom: '32px',
